@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request, HTTPException
+from fastapi.responses import JSONResponse
 import os
 
 INTERNAL_SECRET = os.environ["INTERNAL_SECRET"]
@@ -11,7 +12,10 @@ app = FastAPI(title="Internal Nuclear Code API", docs_url=None, redoc_url=None)
 async def verify_secret_header(request: Request, call_next):
     secret = request.headers.get("X-Internal-Gateway-Auth")
     if secret != INTERNAL_SECRET:
-        raise HTTPException(status_code=403, detail="Forbidden")
+        return JSONResponse(
+            status_code=403,
+            content={"detail": "Forbidden — missing or invalid internal secret"}
+        )
     return await call_next(request)
 
 @app.get("/launch-codes")
